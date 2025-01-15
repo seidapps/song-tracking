@@ -9,5 +9,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  assetsInclude: ['**/*.json']
+  build: {
+    rollupOptions: {
+      plugins: []
+    }
+  },
+  json: {
+    stringify: true
+  }
 })
