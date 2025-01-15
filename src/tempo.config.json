@@ -1,10 +1,4 @@
 {
-  "routes": [
-    {
-      "path": "/",
-      "element": "Home"
-    }
-  ],
   "typography": [
     {
       "name": "Header 1",

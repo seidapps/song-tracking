@@ -1,7 +1,8 @@
 import { Suspense } from "react";
-import { useRoutes, Routes, Route } from "react-router-dom";
+import { useRoutes, Routes, Route, RouteObject } from "react-router-dom";
 import Home from "./components/home";
-import routes from "tempo-routes";
+import config from "../tempo.config.json";
+const routes = config.routes as unknown as RouteObject[];
 
 function App() {
   return (
