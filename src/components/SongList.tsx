@@ -1,24 +1,49 @@
 import { supabase } from '../lib/supabase';
+import { useEffect, useState } from 'react';
 
-const fetchSongs = async () => {
-  console.log('Starting to fetch songs...');
-  try {
-    const { data, error } = await supabase
-      .from('songs')
-      .select('*')
-      // Add logging to see the response
-      .then(result => {
-        console.log('Query response:', result);
-        return result;
-      });
+export function SongList() {
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    if (error) {
-      console.error('Error fetching songs:', error);
-      return;
-    }
+  useEffect(() => {
+    const fetchSongs = async () => {
+      console.log('Starting to fetch songs...');
+      try {
+        // Get current user's ID
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('Current user:', user?.id);
 
-    console.log('Songs fetched successfully:', data?.length || 0, 'songs');
-  } catch (error) {
-    console.error('Exception while fetching songs:', error);
-  }
-}; 
+        const { data, error } = await supabase
+          .from('songs')
+          .select('*')
+          .eq('user_id', user?.id);
+
+        console.log('Query response:', { data, error });
+
+        if (error) {
+          console.error('Error fetching songs:', error);
+          return;
+        }
+
+        setSongs(data || []);
+      } catch (error) {
+        console.error('Exception while fetching songs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSongs();
+  }, []);
+
+  if (loading) return <div>Loading songs...</div>;
+  if (songs.length === 0) return <div>No songs found matching your criteria</div>;
+
+  return (
+    <div>
+      {songs.map((song) => (
+        <div key={song.id}>{song.title}</div>
+      ))}
+    </div>
+  );
+} 
