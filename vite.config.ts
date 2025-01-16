@@ -1,17 +1,19 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import path from 'path'
 import { tempo } from "tempo-devtools/dist/vite"
 
-const conditionalPlugins: [string, Record<string, any>][] = []
+const conditionalPlugins: string[] = []
 if (process.env.TEMPO) {
-  conditionalPlugins.push(['tempo-devtools/swc', {}])
+  conditionalPlugins.push('tempo-devtools/dist/babel-plugin')
 }
 
 export default defineConfig({
   plugins: [
     react({
-      plugins: [...conditionalPlugins]
+      babel: {
+        plugins: [...conditionalPlugins]
+      }
     }),
     tempo()
   ],
