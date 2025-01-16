@@ -1,18 +1,20 @@
-import { Suspense } from "react";
-import { useRoutes, Routes, Route, RouteObject } from "react-router-dom";
+import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
+import routes from "tempo-routes";
 import Home from "./components/home";
-import config from "../tempo.config.json";
-import { AuthCallback } from './components/AuthCallback'
-const routes = config.routes as unknown as RouteObject[];
 
 function App() {
   return (
     <div>
+      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
+        
+        {/* Add Tempo route before catchall */}
+        {import.meta.env.VITE_TEMPO === "true" && <Route path="/tempobook/*" />}
+        
+        {/* Catchall route */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
     </div>
   );
 }
