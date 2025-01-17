@@ -22,51 +22,50 @@ const Home = () => {
   const [songs, setSongs] = React.useState<Song[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const initialized = React.useRef(false);
 
-  const loadSongs = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getSongs();
-      console.log("Loaded songs:", data);
-      setSongs(data || []);
-    } catch (error) {
-      console.error("Error loading songs:", error);
-      setError("Failed to load songs");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  React.useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const initializeAuth = async () => {
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        console.log("Current user:", currentUser);
-        if (currentUser) {
-          setUser(currentUser);
-          await loadSongs();
+        console.log("Starting initial data fetch");
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log("Current user:", user);
+        
+        if (!user) {
+          console.log("No user found");
+          setLoading(false);
+          return;
         }
+
+        setUser(user);
+
+        // Fetch songs
+        const { data: songsData, error: songsError } = await supabase
+          .from('songs')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        console.log("Songs fetch result:", { songsData, songsError });
+
+        if (songsError) throw songsError;
+        setSongs(songsData || []);
       } catch (error) {
-        console.error("Auth error:", error);
-        setError("Authentication failed");
+        console.error("Error in data fetch:", error);
+        setError("Failed to load data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    initializeAuth();
+    fetchData();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user);
-      if (event === "SIGNED_IN") {
+      if (event === 'SIGNED_IN') {
         setUser(session?.user);
-        await loadSongs();
-      } else if (event === "SIGNED_OUT") {
+        fetchData(); // Refetch data on sign in
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setSongs([]);
       }
@@ -140,33 +139,6 @@ const Home = () => {
       console.error("Error signing out:", error);
     }
   };
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      console.log("Fetching songs...");
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("Fetching songs for user:", user?.id);
-
-        const { data, error } = await supabase
-          .from('songs')
-          .select('*')
-          .eq('user_id', user?.id)
-          .order('created_at', { ascending: false });
-
-        console.log("Songs fetch result:", { data, error });
-
-        if (error) throw error;
-        setSongs(data || []);
-      } catch (error) {
-        console.error("Error fetching songs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSongs();
-  }, []);
 
   if (!user) {
     return (
