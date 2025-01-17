@@ -68,18 +68,21 @@ const SongGrid = ({
             <Button
               variant={statusFilter === "all" ? "default" : "outline"}
               onClick={() => setStatusFilter("all")}
+              className="text-white hover:text-white"
             >
               All
             </Button>
             <Button
               variant={statusFilter === "in-progress" ? "default" : "outline"}
               onClick={() => setStatusFilter("in-progress")}
+              className="text-white hover:text-white"
             >
               In Progress
             </Button>
             <Button
               variant={statusFilter === "mastered" ? "default" : "outline"}
               onClick={() => setStatusFilter("mastered")}
+              className="text-white hover:text-white"
             >
               Mastered
             </Button>
