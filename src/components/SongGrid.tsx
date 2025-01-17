@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import SongCard from "./SongCard";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { Song } from "@/types/database";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { supabase } from "@/lib/supabase";
 
 interface SongGridProps {
   songs?: Song[];
@@ -26,7 +27,13 @@ const SongGrid = ({
     "all" | "in-progress" | "mastered"
   >("all");
 
+  useEffect(() => {
+    console.log("SongGrid received songs:", songs.length);
+    console.log("Loading state:", loading);
+  }, [songs, loading]);
+
   const filteredSongs = songs.filter((song) => {
+    console.log("Filtering song:", song.title);
     const matchesSearch = song.title
       .toLowerCase()
       .includes(filter.toLowerCase());
