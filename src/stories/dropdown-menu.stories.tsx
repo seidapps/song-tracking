@@ -120,7 +120,7 @@ export const Base = {
           <span>API</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem className="bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
