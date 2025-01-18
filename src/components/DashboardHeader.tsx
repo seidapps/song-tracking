@@ -58,7 +58,7 @@ const DashboardHeader = ({
             </div>
             <DropdownMenuItem
               onClick={onLogout}
-              className="text-red-600 cursor-pointer"
+              className="bg-zinc-900 hover:bg-zinc-800 text-red-600 cursor-pointer"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Logout

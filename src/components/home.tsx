@@ -23,58 +23,41 @@ const Home = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      setSongs(data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log("Starting initial data fetch");
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("Current user:", user);
-        
-        if (!user) {
-          console.log("No user found");
-          setLoading(false);
-          return;
-        }
-
-        setUser(user);
-
-        // Fetch songs
-        const { data: songsData, error: songsError } = await supabase
-          .from('songs')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        console.log("Songs fetch result:", { songsData, songsError });
-
-        if (songsError) throw songsError;
-        setSongs(songsData || []);
-      } catch (error) {
-        console.error("Error in data fetch:", error);
-        setError("Failed to load data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-
-    // Set up auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user);
-      if (event === 'SIGNED_IN') {
-        setUser(session?.user);
-        fetchData(); // Refetch data on sign in
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setSongs([]);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
+
+  // Set up auth listener
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log("Auth state changed:", event, session?.user);
+    if (event === 'SIGNED_IN') {
+      setUser(session?.user);
+      fetchData(); // Refetch data on sign in
+    } else if (event === 'SIGNED_OUT') {
+      setUser(null);
+      setSongs([]);
+    }
+  });
 
   const handleAddSong = async (url: string) => {
     try {
@@ -175,7 +158,7 @@ const Home = () => {
           <div className="text-center py-12">
             <p className="text-red-500">{error}</p>
             <Button
-              onClick={loadSongs}
+              onClick={fetchData}
               className="mt-4 bg-red-600 hover:bg-red-700 text-white"
             >
               Retry
